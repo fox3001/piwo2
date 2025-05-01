@@ -1,9 +1,14 @@
+from pathlib import Path
 
-<!DOCTYPE html>
+# Percorso per il file HTML definitivo
+output_path = Path("/mnt/data/fuoco_fatuo_v36_definitivo.html")
+
+# HTML completo rigenerato con codice grafico + microfono stabile
+html_final = """<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Fuoco Fatuo - Microfono Fix Full</title>
+  <title>Fuoco Fatuo - Definitivo</title>
   <style>
     html, body { margin:0; padding:0; background:black; overflow:hidden; }
     canvas { display:block; }
@@ -12,15 +17,149 @@
 <body>
 <canvas id="canvas"></canvas>
 <script>
-// [Resto del codice visuale invariato - omesso per brevità]
-// Qui andrebbe il codice delle particelle, occhi, ecc. che rimane identico
+// --- Canvas Setup e Stato ---
+const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// SEMPLIFICATO: Inseriamo solo la parte modificata del riconoscimento vocale
+let time = 0, particles = [];
+let centerX = canvas.width/2, centerY = canvas.height/2;
+let baseX = centerX, baseY = centerY;
+let moveSpeedX = 100 + Math.random()*60, moveSpeedY = 80 + Math.random()*40;
+let rotation = 0, targetRotation = 0, jumpOffset = 0, targetOffset = 0;
+let lookAngle = 0, lookTimer = 0, blinking = false, blinkTimer = Math.random()*600 + 400;
+let reacting = false, reactTimer = 0;
+let cursed = false, cursedStart = 0;
+let explosionPhase = 0, explosionTimer = 0, particleHold = [];
+let crucioTimeout = null;
+let reappearing = false, reappearStart = 0;
 
+// --- Utility ---
+function randGaussian(s=1){
+  let u=Math.random(), v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*s;
+}
+function spawnParticle(x,y){
+  return {
+    x: x + randGaussian(cursed?30:50),
+    y: y + randGaussian(cursed?30:50),
+    vx: (Math.random()-0.5)*(cursed?1:0.2),
+    vy: -Math.random()*(cursed?3:1.5)-0.4,
+    size: Math.random()*30+20,
+    life: 1
+  };
+}
+
+// --- Occhi ---
+function drawEyes(x,y){
+  if(reappearing) return;
+  ctx.save();
+  let shake = cursed ? (Math.random()-0.5)*50 : 0;
+  ctx.translate(x+shake, y+jumpOffset+shake);
+  ctx.rotate(rotation*Math.PI/180);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'white';
+  const ex = 50, ey = -10;
+  let squeeze = 24;
+  if(cursed){
+    let t = (performance.now()-cursedStart)/8000; t = Math.min(1,t);
+    squeeze = 24 - (24-4)*t;
+  }
+  if(reacting && reactTimer>0){
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(-ex,-5,24,0,Math.PI,true); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ex,-5,24,0,Math.PI,true); ctx.stroke();
+  } else if(blinking){
+    ctx.beginPath(); ctx.ellipse(-ex+lookAngle,ey,24,4,0,0,2*Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(ex+lookAngle,ey,24,4,0,0,2*Math.PI); ctx.fill();
+  } else {
+    if(cursed){
+      ctx.beginPath(); ctx.ellipse(-ex+lookAngle,ey,40,squeeze,0,0,2*Math.PI); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(ex+lookAngle,ey,40,squeeze,0,0,2*Math.PI); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(-ex+lookAngle,ey,24,0,2*Math.PI); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex+lookAngle,ey,24,0,2*Math.PI); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// --- Disegna Particelle + Effetti ---
+function drawWisp(x,y){
+  if(reappearing){
+    let elapsed = performance.now() - reappearStart;
+    if(elapsed < 3000){
+      for(let i=0;i<30;i++) particles.push(spawnParticle(x,y));
+    } else {
+      reappearing = false;
+    }
+  } else if(explosionPhase===1 && explosionTimer>0){
+    particleHold.forEach(p=>particles.push({...p}));
+    explosionTimer--;
+  } else if(explosionPhase===0){
+    if(particles.length < 60000){
+      let cnt = cursed?20:10;
+      for(let i=0;i<cnt;i++) particles.push(spawnParticle(x,y));
+    }
+  }
+
+  ctx.save(); ctx.globalCompositeOperation = 'screen';
+  for(let i=particles.length-1;i>=0;i--){
+    let p = particles[i];
+    p.x += p.vx + (Math.random()-0.5)*1.5;
+    p.y += p.vy + (Math.random()-0.5)*1.5;
+    p.life *= (cursed?0.97:0.90);
+    if(p.life < 0.05){ particles.splice(i,1); continue; }
+    let r,g,b;
+    if(cursed){
+      let t = (performance.now()-cursedStart)/8000; t=Math.min(1,t);
+      r = Math.floor(20 + t*(255-20));
+      g = Math.floor(100*(1-t));
+      b = Math.floor(90*(1-t));
+    } else {
+      r=20; g=100; b=90;
+    }
+    const grad = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*1.5);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${p.life*0.3})`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size*0.5,0,2*Math.PI); ctx.fill();
+  }
+  ctx.restore();
+  if(explosionPhase < 2) drawEyes(x,y);
+}
+
+function animate(){
+  time++;
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(!reacting && !cursed && explosionPhase===0 && !reappearing){
+    baseX = canvas.width/2 + Math.sin(time/60)*moveSpeedX;
+    baseY = canvas.height/2 + Math.cos(time/50)*moveSpeedY;
+  }
+  centerX += (baseX-centerX)*0.3;
+  centerY += (baseY-centerY)*0.3;
+  rotation += (targetRotation-rotation)*0.3;
+  jumpOffset += (targetOffset-jumpOffset)*0.3;
+  lookTimer--; if(lookTimer<=0){ lookAngle=(Math.random()-0.5)*30; lookTimer=120+Math.random()*180; }
+  blinkTimer--; if(blinkTimer<=0 && !reacting){ blinking=true; setTimeout(()=>{ blinking=false; blinkTimer=Math.random()*600+400; },200); }
+  if(reacting && reactTimer>0){
+    if([60,40,20].includes(reactTimer)) targetOffset=-20;
+    if([50,30,10].includes(reactTimer)) targetOffset=0;
+    if(reactTimer===30) targetRotation=-20;
+    if(reactTimer===5) targetRotation=0;
+    reactTimer--; if(reactTimer<=0) reacting=false;
+  }
+  drawWisp(centerX,centerY);
+  requestAnimationFrame(animate);
+}
+animate();
+
+// --- Riconoscimento Vocale Stabile ---
 const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 rec.lang = 'it-IT';
-rec.continuous = false; // Ignorato su mobile
-rec.interimResults = true; // Attiva risultati parziali
+rec.continuous = false;
+rec.interimResults = true;
 rec.maxAlternatives = 5;
 
 let timeout = null;
@@ -30,23 +169,21 @@ rec.onstart = () => {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     console.warn("⏱️ Timeout inattività, riavvio microfono");
-    rec.stop(); // forza riavvio
-  }, 5000); // max 5 secondi d'ascolto
+    rec.stop();
+  }, 5000);
 };
 
 rec.onresult = e => {
   clearTimeout(timeout);
-  let finalText = "";
-  for (let i = e.resultIndex; i < e.results.length; ++i) {
+  for (let i = e.resultIndex; i < e.results.length; ++i){
     const text = e.results[i][0].transcript.trim().toLowerCase();
     console.log("👂 Comando:", text);
-    finalText += text;
 
     if (e.results[i].isFinal) {
-      if (/\b(saluta|ciao|ehi|hello)\b/.test(text)) {
+      if (/\\b(saluta|ciao|ehi|hello)\\b/.test(text)) {
         reacting = true; reactTimer = 60;
       }
-      if (/\b(crucio|crusio|cruxio|krucio)\b/.test(text)) {
+      if (/\\b(crucio|crusio|cruxio|krucio)\\b/.test(text)) {
         cursed = true; cursedStart = performance.now();
         particleHold = [];
         for (let j = 0; j < 300; j++) {
@@ -64,11 +201,11 @@ rec.onresult = e => {
           setTimeout(() => { explosionPhase = 2; }, 500);
         }, 15000);
       }
-      if (/\b(satis|stop)\b/.test(text)) {
+      if (/\\b(satis|stop)\\b/.test(text)) {
         clearTimeout(crucioTimeout);
         cursed = false; explosionPhase = 0; particles = []; particleHold = [];
       }
-      if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+      if (/\\b(revelio|rivelio|revellyo)\\b/.test(text)) {
         if (explosionPhase >= 1) {
           reappearing = true; reappearStart = performance.now();
           cursed = false; explosionPhase = 0; particles = []; particleHold = [];
@@ -76,32 +213,29 @@ rec.onresult = e => {
       }
     }
   }
+  rec.start();
 };
 
-rec.onerror = (e) => {
+rec.onerror = e => {
   console.error("❌ Errore:", e.error);
   clearTimeout(timeout);
-  setTimeout(() => {
-    try { rec.start(); } catch {}
-  }, 1000);
+  setTimeout(() => { try { rec.start(); } catch {} }, 1000);
 };
 
 rec.onend = () => {
   console.log("🔁 Microfono terminato, riavvio...");
   clearTimeout(timeout);
-  setTimeout(() => {
-    try { rec.start(); } catch {}
-  }, 300);
+  setTimeout(() => { try { rec.start(); } catch {} }, 300);
 };
 
 document.body.addEventListener("click", () => {
-  try {
-    rec.start();
-  } catch (e) {
-    console.error("Start fallito:", e);
-  }
+  try { rec.start(); } catch (e) { console.error("Start fallito:", e); }
 }, { once: true });
-
 </script>
 </body>
 </html>
+"""
+
+# Salvataggio del file completo
+output_path.write_text(html_final)
+output_path.name
