@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Fuoco Fatuo - Microfono Fix Full</title>
+  <style>
+    html, body { margin:0; padding:0; background:black; overflow:hidden; }
+    canvas { display:block; }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+// [Resto del codice visuale invariato - omesso per brevità]
+// Qui andrebbe il codice delle particelle, occhi, ecc. che rimane identico
+
+// SEMPLIFICATO: Inseriamo solo la parte modificata del riconoscimento vocale
+
+const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+rec.lang = 'it-IT';
+rec.continuous = false; // Ignorato su mobile
+rec.interimResults = true; // Attiva risultati parziali
+rec.maxAlternatives = 5;
+
+let timeout = null;
+
+rec.onstart = () => {
+  console.log("🎤 Microfono attivo");
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    console.warn("⏱️ Timeout inattività, riavvio microfono");
+    rec.stop(); // forza riavvio
+  }, 5000); // max 5 secondi d'ascolto
+};
+
+rec.onresult = e => {
+  clearTimeout(timeout);
+  let finalText = "";
+  for (let i = e.resultIndex; i < e.results.length; ++i) {
+    const text = e.results[i][0].transcript.trim().toLowerCase();
+    console.log("👂 Comando:", text);
+    finalText += text;
+
+    if (e.results[i].isFinal) {
+      if (/\b(saluta|ciao|ehi|hello)\b/.test(text)) {
+        reacting = true; reactTimer = 60;
+      }
+      if (/\b(crucio|crusio|cruxio|krucio)\b/.test(text)) {
+        cursed = true; cursedStart = performance.now();
+        particleHold = [];
+        for (let j = 0; j < 300; j++) {
+          let p = spawnParticle(centerX, centerY);
+          let ang = Math.random() * 2 * Math.PI;
+          p.vx = Math.cos(ang) * 31.2;
+          p.vy = Math.sin(ang) * 31.2;
+          particleHold.push(p);
+        }
+        explosionPhase = 0;
+        clearTimeout(crucioTimeout);
+        crucioTimeout = setTimeout(() => {
+          explosionTimer = 30;
+          explosionPhase = 1;
+          setTimeout(() => { explosionPhase = 2; }, 500);
+        }, 15000);
+      }
+      if (/\b(satis|stop)\b/.test(text)) {
+        clearTimeout(crucioTimeout);
+        cursed = false; explosionPhase = 0; particles = []; particleHold = [];
+      }
+      if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+        if (explosionPhase >= 1) {
+          reappearing = true; reappearStart = performance.now();
+          cursed = false; explosionPhase = 0; particles = []; particleHold = [];
+        }
+      }
+    }
+  }
+};
+
+rec.onerror = (e) => {
+  console.error("❌ Errore:", e.error);
+  clearTimeout(timeout);
+  setTimeout(() => {
+    try { rec.start(); } catch {}
+  }, 1000);
+};
+
+rec.onend = () => {
+  console.log("🔁 Microfono terminato, riavvio...");
+  clearTimeout(timeout);
+  setTimeout(() => {
+    try { rec.start(); } catch {}
+  }, 300);
+};
+
+document.body.addEventListener("click", () => {
+  try {
+    rec.start();
+  } catch (e) {
+    console.error("Start fallito:", e);
+  }
+}, { once: true });
+
+</script>
+</body>
+</html>
