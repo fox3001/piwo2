@@ -1,10 +1,4 @@
-from pathlib import Path
-
-# Percorso per il nuovo file HTML ottimizzato per riconoscimento comandi
-output_path = Path("/mnt/data/fuoco_fatuo_v36_microfono_ottimizzato.html")
-
-# Versione HTML ottimizzata con parametri vocali migliorati
-html_optimized = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -158,10 +152,10 @@ rec.onresult = e => {
   const text = e.results[e.resultIndex][0].transcript.trim().toLowerCase();
   console.log("🎙️ Hai detto:", text);
 
-  if (/\b(saluta|ciao|ehi|hello)\b/.test(text)) {
+  if (/(saluta|ciao|ehi|hello)/.test(text)) {
     reacting = true; reactTimer = 60;
   }
-  if (/\b(crucio|crusio|cruxio|krucio)\b/.test(text)) {
+  if (/(crucio|crusio|cruxio|krucio)/.test(text)) {
     cursed = true; cursedStart = performance.now();
     particleHold = [];
     for (let j = 0; j < 300; j++) {
@@ -179,11 +173,11 @@ rec.onresult = e => {
       setTimeout(() => { explosionPhase = 2; }, 500);
     }, 15000);
   }
-  if (/\b(satis|stop)\b/.test(text)) {
+  if (/(satis|stop)/.test(text)) {
     clearTimeout(crucioTimeout);
     cursed = false; explosionPhase = 0; particles = []; particleHold = [];
   }
-  if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+  if (/(revelio|rivelio|revellyo)/.test(text)) {
     if (explosionPhase >= 1) {
       reappearing = true; reappearStart = performance.now();
       cursed = false; explosionPhase = 0; particles = []; particleHold = [];
@@ -204,8 +198,3 @@ document.body.addEventListener("click", () => {
 </script>
 </body>
 </html>
-"""
-
-# Scrittura del file
-output_path.write_text(html_optimized)
-output_path.name
