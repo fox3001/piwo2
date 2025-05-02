@@ -203,6 +203,14 @@ document.body.addEventListener("click", () => {
     document.body.requestFullscreen().then(() => {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(() => {});
+  setTimeout(() => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+    baseX = centerX;
+    baseY = centerY;
+  }, 300);
       }
     });
   }
