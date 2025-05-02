@@ -10,7 +10,6 @@
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<div id="voiceDisplay" style="position:fixed;top:0;left:0;width:100%;padding:1em;background:black;color:lime;font-family:monospace;font-size:1.2em;z-index:999;text-align:center;"></div>
 <script>
 // === Setup canvas e variabili globali ===
 const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
@@ -145,12 +144,11 @@ const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 rec.lang = 'it-IT';
 rec.continuous = true;
 rec.interimResults = false;
-rec.maxAlternatives = 1;
+rec.maxAlternatives = 5;
 
 rec.onresult = (e) => {
   const text = e.results[e.resultIndex][0].transcript.trim().toLowerCase();
   console.log("🎙️ Hai detto:", text);
-document.getElementById("voiceDisplay").textContent = "Hai detto: " + text;
 
   if (/(saluta|ciao|ehi|hello)/.test(text)) {
     reacting = true; reactTimer = 60;
