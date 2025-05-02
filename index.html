@@ -1,14 +1,14 @@
 from pathlib import Path
 
-# Percorso per il file HTML definitivo
-output_path = Path("/mnt/data/fuoco_fatuo_v36_definitivo.html")
+# Percorso per il nuovo file HTML ottimizzato per riconoscimento comandi
+output_path = Path("/mnt/data/fuoco_fatuo_v36_microfono_ottimizzato.html")
 
-# HTML completo rigenerato con codice grafico + microfono stabile
-html_final = """<!DOCTYPE html>
+# Versione HTML ottimizzata con parametri vocali migliorati
+html_optimized = """<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Fuoco Fatuo - Definitivo</title>
+  <title>Fuoco Fatuo - Microfono Ottimizzato</title>
   <style>
     html, body { margin:0; padding:0; background:black; overflow:hidden; }
     canvas { display:block; }
@@ -17,10 +17,9 @@ html_final = """<!DOCTYPE html>
 <body>
 <canvas id="canvas"></canvas>
 <script>
-// --- Canvas Setup e Stato ---
+// Setup canvas e variabili
 const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
 let time = 0, particles = [];
 let centerX = canvas.width/2, centerY = canvas.height/2;
@@ -34,7 +33,6 @@ let explosionPhase = 0, explosionTimer = 0, particleHold = [];
 let crucioTimeout = null;
 let reappearing = false, reappearStart = 0;
 
-// --- Utility ---
 function randGaussian(s=1){
   let u=Math.random(), v=Math.random();
   return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)*s;
@@ -49,8 +47,6 @@ function spawnParticle(x,y){
     life: 1
   };
 }
-
-// --- Occhi ---
 function drawEyes(x,y){
   if(reappearing) return;
   ctx.save();
@@ -83,8 +79,6 @@ function drawEyes(x,y){
   }
   ctx.restore();
 }
-
-// --- Disegna Particelle + Effetti ---
 function drawWisp(x,y){
   if(reappearing){
     let elapsed = performance.now() - reappearStart;
@@ -102,7 +96,6 @@ function drawWisp(x,y){
       for(let i=0;i<cnt;i++) particles.push(spawnParticle(x,y));
     }
   }
-
   ctx.save(); ctx.globalCompositeOperation = 'screen';
   for(let i=particles.length-1;i>=0;i--){
     let p = particles[i];
@@ -128,7 +121,6 @@ function drawWisp(x,y){
   ctx.restore();
   if(explosionPhase < 2) drawEyes(x,y);
 }
-
 function animate(){
   time++;
   ctx.fillStyle='rgba(0,0,0,0.2)';
@@ -155,77 +147,55 @@ function animate(){
 }
 animate();
 
-// --- Riconoscimento Vocale Stabile ---
+// Microfono ottimizzato
 const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 rec.lang = 'it-IT';
-rec.continuous = false;
-rec.interimResults = true;
-rec.maxAlternatives = 5;
-
-let timeout = null;
-
-rec.onstart = () => {
-  console.log("🎤 Microfono attivo");
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    console.warn("⏱️ Timeout inattività, riavvio microfono");
-    rec.stop();
-  }, 5000);
-};
+rec.continuous = true;
+rec.interimResults = false;
+rec.maxAlternatives = 1;
 
 rec.onresult = e => {
-  clearTimeout(timeout);
-  for (let i = e.resultIndex; i < e.results.length; ++i){
-    const text = e.results[i][0].transcript.trim().toLowerCase();
-    console.log("👂 Comando:", text);
+  const text = e.results[e.resultIndex][0].transcript.trim().toLowerCase();
+  console.log("🎙️ Hai detto:", text);
 
-    if (e.results[i].isFinal) {
-      if (/\\b(saluta|ciao|ehi|hello)\\b/.test(text)) {
-        reacting = true; reactTimer = 60;
-      }
-      if (/\\b(crucio|crusio|cruxio|krucio)\\b/.test(text)) {
-        cursed = true; cursedStart = performance.now();
-        particleHold = [];
-        for (let j = 0; j < 300; j++) {
-          let p = spawnParticle(centerX, centerY);
-          let ang = Math.random() * 2 * Math.PI;
-          p.vx = Math.cos(ang) * 31.2;
-          p.vy = Math.sin(ang) * 31.2;
-          particleHold.push(p);
-        }
-        explosionPhase = 0;
-        clearTimeout(crucioTimeout);
-        crucioTimeout = setTimeout(() => {
-          explosionTimer = 30;
-          explosionPhase = 1;
-          setTimeout(() => { explosionPhase = 2; }, 500);
-        }, 15000);
-      }
-      if (/\\b(satis|stop)\\b/.test(text)) {
-        clearTimeout(crucioTimeout);
-        cursed = false; explosionPhase = 0; particles = []; particleHold = [];
-      }
-      if (/\\b(revelio|rivelio|revellyo)\\b/.test(text)) {
-        if (explosionPhase >= 1) {
-          reappearing = true; reappearStart = performance.now();
-          cursed = false; explosionPhase = 0; particles = []; particleHold = [];
-        }
-      }
+  if (/\b(saluta|ciao|ehi|hello)\b/.test(text)) {
+    reacting = true; reactTimer = 60;
+  }
+  if (/\b(crucio|crusio|cruxio|krucio)\b/.test(text)) {
+    cursed = true; cursedStart = performance.now();
+    particleHold = [];
+    for (let j = 0; j < 300; j++) {
+      let p = spawnParticle(centerX, centerY);
+      let ang = Math.random() * 2 * Math.PI;
+      p.vx = Math.cos(ang) * 31.2;
+      p.vy = Math.sin(ang) * 31.2;
+      particleHold.push(p);
+    }
+    explosionPhase = 0;
+    clearTimeout(crucioTimeout);
+    crucioTimeout = setTimeout(() => {
+      explosionTimer = 30;
+      explosionPhase = 1;
+      setTimeout(() => { explosionPhase = 2; }, 500);
+    }, 15000);
+  }
+  if (/\b(satis|stop)\b/.test(text)) {
+    clearTimeout(crucioTimeout);
+    cursed = false; explosionPhase = 0; particles = []; particleHold = [];
+  }
+  if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+    if (explosionPhase >= 1) {
+      reappearing = true; reappearStart = performance.now();
+      cursed = false; explosionPhase = 0; particles = []; particleHold = [];
     }
   }
-  rec.start();
 };
 
 rec.onerror = e => {
-  console.error("❌ Errore:", e.error);
-  clearTimeout(timeout);
-  setTimeout(() => { try { rec.start(); } catch {} }, 1000);
+  console.error("Errore microfono:", e.error);
 };
-
 rec.onend = () => {
-  console.log("🔁 Microfono terminato, riavvio...");
-  clearTimeout(timeout);
-  setTimeout(() => { try { rec.start(); } catch {} }, 300);
+  rec.start(); // auto-restart
 };
 
 document.body.addEventListener("click", () => {
@@ -236,6 +206,6 @@ document.body.addEventListener("click", () => {
 </html>
 """
 
-# Salvataggio del file completo
-output_path.write_text(html_final)
+# Scrittura del file
+output_path.write_text(html_optimized)
 output_path.name
