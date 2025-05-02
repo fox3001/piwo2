@@ -94,6 +94,10 @@ function drawWisp(x, y) {
     p.x += p.vx + (Math.random() - 0.5) * 1.5;
     p.y += p.vy + (Math.random() - 0.5) * 1.5;
     p.life *= (cursed ? 0.97 : 0.90);
+// Dissolvenza ai bordi
+if (p.x < 50 || p.x > canvas.width - 50 || p.y < 50 || p.y > canvas.height - 50) {
+  p.life *= 0.6;
+}
     if (p.life < 0.05) { particles.splice(i, 1); continue; }
     let r = cursed ? 255 : 20, g = cursed ? 0 : 100, b = cursed ? 0 : 90;
     const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 1.5);
@@ -177,7 +181,7 @@ rec.onresult = (e) => {
     particleHold = [];
   }
 
-  if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+  if (/\b(revelio|rivellyo|rivelio|spectro)\b/.test(text)) {
     if (explosionPhase >= 1) {
       reappearing = true;
       reappearStart = performance.now();
@@ -193,7 +197,16 @@ rec.onerror = (e) => {
   console.error("Errore microfono:", e.error);
 };
 rec.onend = () => { rec.start(); };
-document.body.addEventListener("click", () => { rec.start(); }, { once: true });
+document.body.addEventListener("click", () => {
+  rec.start();
+  if (document.body.requestFullscreen) {
+    document.body.requestFullscreen().then(() => {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+    });
+  }
+}, { once: true });
 </script>
 </body>
 </html>
