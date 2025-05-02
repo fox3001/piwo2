@@ -19,8 +19,9 @@ canvas.height = screen.height;
 
 // Variabili globali
 let time = 0, particles = [];
-let centerX = canvas.width / 2, centerY = screen.height / 2;
-let baseX = centerX, baseY = screen.height / 2;
+let centerX = canvas.width / 2;
+      centerY = canvas.height / 2;
+let baseX = centerX, baseY = canvas.height / 2;
 let moveSpeedX = 100 + Math.random() * 60, moveSpeedY = 80 + Math.random() * 40;
 let rotation = 0, targetRotation = 0, jumpOffset = 0, targetOffset = 0;
 let lookAngle = 0, lookTimer = 0, blinking = false, blinkTimer = Math.random() * 600 + 400;
@@ -215,8 +216,8 @@ document.body.addEventListener("click", () => {
       canvas.height = screen.height;
       centerX = screen.width / 2;
       centerY = screen.height / 2;
-      baseX = screen.width / 2;
-      baseY = screen.height / 2;
+      baseX = canvas.width / 2;
+      baseY = canvas.height / 2;
       moveSpeedX = 100 + Math.random() * 60;
       moveSpeedY = 80 + Math.random() * 40;
       particles = [];
