@@ -199,6 +199,11 @@ rec.onerror = (e) => {
 rec.onend = () => { rec.start(); };
 
 
+
+  }
+}, { once: true });
+
+
 document.body.addEventListener("click", () => {
   rec.start();
   if (document.body.requestFullscreen) {
@@ -212,6 +217,8 @@ document.body.addEventListener("click", () => {
       centerY = canvas.height / 2;
       baseX = centerX;
       baseY = centerY;
+      moveSpeedX = 100 + Math.random() * 60;
+      moveSpeedY = 80 + Math.random() * 40;
       particles = [];
       drawWisp(centerX, centerY);
     });
