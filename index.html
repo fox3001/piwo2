@@ -14,13 +14,13 @@
 // Setup canvas
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = screen.width;
+canvas.height = screen.height;
 
 // Variabili globali
 let time = 0, particles = [];
-let centerX = canvas.width / 2, centerY = canvas.height / 2;
-let baseX = centerX, baseY = centerY;
+let centerX = canvas.width / 2, centerY = screen.height / 2;
+let baseX = centerX, baseY = screen.height / 2;
 let moveSpeedX = 100 + Math.random() * 60, moveSpeedY = 80 + Math.random() * 40;
 let rotation = 0, targetRotation = 0, jumpOffset = 0, targetOffset = 0;
 let lookAngle = 0, lookTimer = 0, blinking = false, blinkTimer = Math.random() * 600 + 400;
@@ -211,12 +211,12 @@ document.body.addEventListener("click", () => {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(() => {});
       }
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      centerX = canvas.width / 2;
-      centerY = canvas.height / 2;
-      baseX = centerX;
-      baseY = centerY;
+      canvas.width = screen.width;
+      canvas.height = screen.height;
+      centerX = screen.width / 2;
+      centerY = screen.height / 2;
+      baseX = screen.width / 2;
+      baseY = screen.height / 2;
       moveSpeedX = 100 + Math.random() * 60;
       moveSpeedY = 80 + Math.random() * 40;
       particles = [];
