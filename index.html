@@ -21,6 +21,8 @@ canvas.height = window.innerHeight;
 let time = 0, particles = [];
 let centerX = canvas.width / 2, centerY = canvas.height / 2;
 let baseX = centerX, baseY = centerY;
+  particles = [];
+  drawWisp(centerX, centerY);
 let moveSpeedX = 100 + Math.random() * 60, moveSpeedY = 80 + Math.random() * 40;
 let rotation = 0, targetRotation = 0, jumpOffset = 0, targetOffset = 0;
 let lookAngle = 0, lookTimer = 0, blinking = false, blinkTimer = Math.random() * 600 + 400;
@@ -210,6 +212,8 @@ document.body.addEventListener("click", () => {
     centerY = canvas.height / 2;
     baseX = centerX;
     baseY = centerY;
+  particles = [];
+  drawWisp(centerX, centerY);
   }, 300);
       }
     });
