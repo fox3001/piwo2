@@ -19,14 +19,13 @@
 // Setup canvas
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-canvas.width = screen.width;
-canvas.height = screen.height;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 // Variabili globali
 let time = 0, particles = [];
-let centerX = canvas.width / 2;
-      centerY = canvas.height / 2;
-let baseX = centerX, baseY = canvas.height / 2;
+let centerX = canvas.width / 2, centerY = canvas.height / 2;
+let baseX = centerX, baseY = centerY;
 let moveSpeedX = 100 + Math.random() * 60, moveSpeedY = 80 + Math.random() * 40;
 let rotation = 0, targetRotation = 0, jumpOffset = 0, targetOffset = 0;
 let lookAngle = 0, lookTimer = 0, blinking = false, blinkTimer = Math.random() * 600 + 400;
@@ -203,28 +202,46 @@ rec.onerror = (e) => {
   console.error("Errore microfono:", e.error);
 };
 rec.onend = () => { rec.start(); };
-
-
-
-  }
-}, { once: true });
-
-
 document.body.addEventListener("click", () => {
-  console.log("🎯 TAP RICEVUTO");
-  document.getElementById("tapToStart").remove();
   rec.start();
   if (document.body.requestFullscreen) {
     document.body.requestFullscreen().then(() => {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(() => {});
+  setTimeout(() => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+    baseX = centerX;
+    baseY = centerY;
+  }, 300);
       }
-      canvas.width = screen.width;
-      canvas.height = screen.height;
-      centerX = screen.width / 2;
-      centerY = screen.height / 2;
-      baseX = canvas.width / 2;
-      baseY = canvas.height / 2;
+    });
+  }
+}, { once: true });
+
+document.body.addEventListener("click", () => {
+  document.getElementById("tapToStart").remove();
+  console.log("🎯 TAP RICEVUTO");
+
+  // Attiva microfono
+  rec.start();
+
+  // Richiedi fullscreen e blocca orientamento
+  if (document.body.requestFullscreen) {
+    document.body.requestFullscreen().then(() => {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+
+      // Resize canvas e centra creatura
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      centerX = canvas.width / 2;
+      centerY = canvas.height / 2;
+      baseX = centerX;
+      baseY = centerY;
       moveSpeedX = 100 + Math.random() * 60;
       moveSpeedY = 80 + Math.random() * 40;
       particles = [];
