@@ -189,6 +189,53 @@ rec.onresult = (e) => {
       particleHold = [];
     }
   }
+
+  const text = e.results[e.resultIndex][0].transcript.trim().toLowerCase();
+  console.log("🎙️ Hai detto:", text);
+
+  if (/\b(saluta|ciao|ehi|hello)\b/.test(text)) {
+    reacting = true;
+    reactTimer = 60;
+  }
+
+  if (/\b(crucio|crusio|cruxio|krucio)\b/.test(text)) {
+    cursed = true;
+    cursedStart = performance.now();
+    particleHold = [];
+    for (let j = 0; j < 300; j++) {
+      let p = spawnParticle(centerX, centerY);
+      let ang = Math.random() * 2 * Math.PI;
+      p.vx = Math.cos(ang) * 31.2;
+      p.vy = Math.sin(ang) * 31.2;
+      particleHold.push(p);
+    }
+    explosionPhase = 0;
+    clearTimeout(crucioTimeout);
+    crucioTimeout = setTimeout(() => {
+      explosionTimer = 30;
+      explosionPhase = 1;
+      setTimeout(() => { explosionPhase = 2; }, 500);
+    }, 15000);
+  }
+
+  if (/\b(satis|stop)\b/.test(text)) {
+    clearTimeout(crucioTimeout);
+    cursed = false;
+    explosionPhase = 0;
+    particles = [];
+    particleHold = [];
+  }
+
+  if (/\b(revelio|rivelio|revellyo)\b/.test(text)) {
+    if (explosionPhase >= 1) {
+      reappearing = true;
+      reappearStart = performance.now();
+      cursed = false;
+      explosionPhase = 0;
+      particles = [];
+      particleHold = [];
+    }
+  }
 };
 
 rec.onerror = (e) => {
